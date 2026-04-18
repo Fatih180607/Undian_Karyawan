@@ -3,12 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Undian</title>
+    <title>Admin Undian - RAT K2MS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
-        .nav-admin { background: #2d3436; color: white; padding: 15px 0; margin-bottom: 25px; }
+
+        /* Navbar Styling */
+        .navbar-admin { background: #2d3436; padding: 10px 0; }
+        .nav-link { color: rgba(255,255,255,0.7) !important; font-weight: 500; transition: 0.3s; }
+        .nav-link:hover, .nav-link.active { color: white !important; }
+        .nav-link.active { border-bottom: 2px solid #ffc107; }
+
         .card { border-radius: 18px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .btn-round { border-radius: 100px; font-weight: bold; }
         .prize-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
@@ -20,20 +26,46 @@
 </head>
 <body>
 
-<div class="nav-admin shadow-sm">
-    <div class="container d-flex justify-content-between align-items-center">
-        <h4 class="mb-0 fw-bold">Admin Undian</h4>
-        <button onclick="gasUndian()" class="btn btn-warning btn-round px-4 shadow-sm">
-            <i class="fas fa-play me-1"></i> BUKA LAYAR UNDIAN
+<nav class="navbar navbar-expand-lg navbar-dark navbar-admin shadow-sm mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="#">RAT K2MS</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
         </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/"><i class="fas fa-gift me-1"></i> Dashboard Doorprize</a>
+                </li>
+                <li class="nav-item ms-lg-3">
+                    <a class="nav-link" href="/beasiswa-admin"><i class="fas fa-graduation-cap me-1"></i> Dashboard Beasiswa</a>
+                </li>
+                <li class="nav-item ms-lg-3">
+                    <a class="nav-link text-warning fw-bold" href="/setting"><i class="fas fa-cog me-1"></i>Settings</a>
+                </li>
+            </ul>
+            <div class="d-flex gap-2">
+                <a href="/undian" target="_blank" class="btn btn-outline-warning btn-round btn-sm px-3">
+                    LAYAR DOORPRIZE
+                </a>
+                <a href="/beasiswa-undi" target="_blank" class="btn btn-warning btn-round btn-sm px-3 text-dark">
+                    LAYAR BEASISWA
+                </a>
+            </div>
+        </div>
     </div>
-</div>
+</nav>
 
 <div class="container">
     <div class="row">
         <div class="col-lg-4">
+            <div class="card p-4 mb-3 text-center" style="background: #2d3436; color: white;">
+                <h5 class="fw-bold mb-0">DOORPRIZE MODE</h5>
+                <small class="text-secondary">Kelola hadiah & peserta utama</small>
+            </div>
+
             <div class="card p-4 mb-3">
-                <h6 class="fw-bold text-primary mb-3">Tambah Peserta</h6>
+                <h6 class="fw-bold text-primary mb-3">Tambah Peserta Doorprize</h6>
                 <form action="/admin/add-employee" method="POST">
                     @csrf
                     <input type="text" name="employee_number" class="form-control btn-round mb-2" placeholder="NPK" required>
@@ -68,7 +100,10 @@
         <div class="col-lg-8">
             <div class="card p-4 mb-3 border-warning" style="background: #fff9e6;">
                 <h6 class="fw-bold text-warning">PILIH HADIAH UNTUK DIUNDI</h6>
-                <input type="text" id="input_hadiah_manual" class="form-control form-control-lg btn-round text-center" placeholder="Klik tombol 'PILIH' pada hadiah di bawah...">
+                <div class="d-flex gap-2">
+                    <input type="text" id="input_hadiah_manual" class="form-control form-control-lg btn-round text-center" placeholder="Klik tombol 'PILIH' pada hadiah di bawah...">
+                    <button class="btn btn-warning btn-round px-4" onclick="gasUndian()">GAS</button>
+                </div>
             </div>
 
             <div class="card p-4 mb-3">
@@ -117,7 +152,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="border-radius: 20px;">
             <div class="modal-body p-4">
-                <h5 class="fw-bold mb-3">Edit Data</h5>
+                <h5 class="fw-bold mb-3">Edit Data Peserta</h5>
                 <form id="editForm" method="POST">
                     @csrf
                     <input type="text" name="employee_number" id="edit_npk" class="form-control btn-round mb-2" required>
@@ -132,7 +167,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     function pilihHadiah(nama) { document.getElementById('input_hadiah_manual').value = nama; }
-    
+
     function gasUndian() {
         const h = document.getElementById('input_hadiah_manual').value;
         if (!h) return alert("Pilih hadiah dulu!");

@@ -3,128 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Undian - Dashboard</title>
+    <title>Admin Undian</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
         .nav-admin { background: #2d3436; color: white; padding: 15px 0; margin-bottom: 25px; }
         .card { border-radius: 18px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        
-        /* Gallery Hadiah */
+        .btn-round { border-radius: 100px; font-weight: bold; }
         .prize-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
-        .prize-card { background: white; border-radius: 15px; border: 1px solid #dee2e6; overflow: hidden; position: relative; transition: 0.3s; }
-        .prize-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .prize-card { background: white; border-radius: 15px; border: 1px solid #dee2e6; overflow: hidden; position: relative; }
         .img-container { width: 100%; aspect-ratio: 1/1; background: #f8f9fa; display: flex; align-items: center; justify-content: center; }
         .prize-img { width: 100%; height: 100%; object-fit: contain; padding: 10px; }
-        .card-info { padding: 10px; text-align: center; font-weight: bold; font-size: 0.75rem; text-transform: uppercase; color: #636e72; }
-        
-        /* Floating Delete Button for Prize */
-        .btn-delete-prize { position: absolute; top: 5px; right: 5px; background: rgba(255, 71, 87, 0.9); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 10px; z-index: 5; transition: 0.2s; }
-        .btn-delete-prize:hover { background: #ff4757; transform: scale(1.1); }
-
-        .btn-round { border-radius: 100px; font-weight: bold; }
-        .table thead { background: #f8f9fa; }
+        .btn-delete-prize { position: absolute; top: 5px; right: 5px; background: rgba(255, 71, 87, 0.9); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; }
     </style>
 </head>
 <body>
 
 <div class="nav-admin shadow-sm">
     <div class="container d-flex justify-content-between align-items-center">
-        <h4 class="mb-0 fw-bold"></i>Website Undian</h4>
-        <a href="{{ url('/undian') }}" class="btn btn-warning btn-round px-4 shadow-sm">
-            <i class="fas fa-play me-1"></i> UNDI SEKARANG
-        </a>
+        <h4 class="mb-0 fw-bold">Admin Undian</h4>
+        <button onclick="gasUndian()" class="btn btn-warning btn-round px-4 shadow-sm">
+            <i class="fas fa-play me-1"></i> BUKA LAYAR UNDIAN
+        </button>
     </div>
 </div>
 
 <div class="container">
     <div class="row">
         <div class="col-lg-4">
-            <div class="card p-4 mb-4">
-                <h6 class="fw-bold text-primary mb-3"><i class="fas fa-user-plus me-2"></i>Tambah Peserta</h6>
+            <div class="card p-4 mb-3">
+                <h6 class="fw-bold text-primary mb-3">Tambah Peserta</h6>
                 <form action="/admin/add-employee" method="POST">
                     @csrf
+                    <input type="text" name="employee_number" class="form-control btn-round mb-2" placeholder="NPK" required>
+                    <input type="text" name="employee_name" class="form-control btn-round mb-3" placeholder="Nama" required>
+                    <button class="btn btn-primary w-100 btn-round">SIMPAN</button>
+                </form>
+            </div>
+
+            <div class="card p-4 mb-3">
+                <h6 class="fw-bold text-info mb-3"><i class="fas fa-file-csv me-2"></i>Import CSV (Excel)</h6>
+                <form action="/admin/import-employees" method="POST" enctype="multipart/form-data">
+                    @csrf
                     <div class="mb-2">
-                        <input type="text" name="employee_number" class="form-control btn-round px-3" placeholder="Nomor Karyawan" required>
+                        <small class="text-muted">Upload File harus .csv</small>
                     </div>
-                    <div class="mb-3">
-                        <input type="text" name="employee_name" class="form-control btn-round px-3" placeholder="Nama Lengkap" required>
-                    </div>
-                    <button class="btn btn-primary w-100 btn-round">SIMPAN DATA</button>
+                    <input type="file" name="file_excel" class="form-control mb-2" accept=".csv" required>
+                    <button type="submit" class="btn btn-info w-100 btn-round text-white">UPLOAD DATA</button>
                 </form>
             </div>
 
             <div class="card p-4">
-                <h6 class="fw-bold text-success mb-3"><i class="fas fa-gift me-2"></i>Tambah Hadiah</h6>
+                <h6 class="fw-bold text-success mb-3">Tambah Hadiah</h6>
                 <form action="/admin/add-prize" method="POST" enctype="multipart/form-data">
                     @csrf
-                    <div class="mb-2">
-                        <input type="text" name="nama_hadiah" class="form-control btn-round px-3" placeholder="Nama Barang" required>
-                    </div>
-                    <div class="mb-3">
-                        <input type="file" name="foto" class="form-control" required>
-                    </div>
+                    <input type="text" name="nama_hadiah" class="form-control btn-round mb-2" placeholder="Nama Barang" required>
+                    <input type="file" name="foto" class="form-control mb-3" required>
                     <button class="btn btn-success w-100 btn-round">UPLOAD HADIAH</button>
                 </form>
             </div>
         </div>
 
         <div class="col-lg-8">
-            <div class="card p-4 mb-4">
-                <h6 class="fw-bold mb-3 text-secondary">HADIAH</h6>
+            <div class="card p-4 mb-3 border-warning" style="background: #fff9e6;">
+                <h6 class="fw-bold text-warning">PILIH HADIAH UNTUK DIUNDI</h6>
+                <input type="text" id="input_hadiah_manual" class="form-control form-control-lg btn-round text-center" placeholder="Klik tombol 'PILIH' pada hadiah di bawah...">
+            </div>
+
+            <div class="card p-4 mb-3">
                 <div class="prize-container">
                     @foreach($prizes as $p)
-                    <div class="prize-card shadow-sm">
-                        <button class="btn-delete-prize" onclick="prepareDeletePrize('{{ $p->id }}', '{{ $p->nama_hadiah }}')" data-bs-toggle="modal" data-bs-target="#deletePrizeModal">
+                    <div class="prize-card shadow-sm text-center">
+                        <a href="{{ url('/admin/delete-prize/'.$p->id) }}" class="btn-delete-prize" onclick="return confirm('Hapus hadiah?')">
                             <i class="fas fa-times"></i>
-                        </button>
-                        <div class="img-container">
-                            <img src="/images/{{ $p->foto_hadiah }}" class="prize-img">
+                        </a>
+                        <div class="img-container"><img src="/images/{{ $p->foto_hadiah }}" class="prize-img"></div>
+                        <div class="p-2">
+                            <div class="small fw-bold">{{ $p->nama_hadiah }}</div>
+                            <button class="btn btn-sm btn-primary btn-round w-100 mt-2" onclick="pilihHadiah('{{ $p->nama_hadiah }}')">PILIH</button>
                         </div>
-                        <div class="card-info">{{ $p->nama_hadiah }}</div>
                     </div>
                     @endforeach
                 </div>
             </div>
 
             <div class="card p-4">
-                <h6 class="fw-bold mb-3 text-secondary">DAFTAR PESERTA</h6>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead>
-                            <tr>
-                                <th width="50">No</th>
-                                <th>Nomor Karyawan</th>
-                                <th>Nama Karyawan</th>
-                                <th class="text-center" width="120">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($employees as $index => $e)
-                            <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td class="fw-bold text-dark">{{ $e->employee_number }}</td>
-                                <td>{{ $e->employee_name }}</td>
-                                <td class="text-center">
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <button class="btn btn-sm btn-outline-warning" 
-                                            onclick="fillEditModal('{{ $e->id }}', '{{ $e->employee_number }}', '{{ $e->employee_name }}')" 
-                                            data-bs-toggle="modal" data-bs-target="#editModal">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger" 
-                                            onclick="prepareDeleteEmployee('{{ $e->id }}', '{{ $e->employee_name }}')" 
-                                            data-bs-toggle="modal" data-bs-target="#deleteEmployeeModal">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                <table class="table table-hover">
+                    <thead><tr><th>NPK</th><th>Nama</th><th class="text-center">Aksi</th></tr></thead>
+                    <tbody>
+                        @foreach($employees as $e)
+                        <tr>
+                            <td>{{ $e->employee_number }}</td>
+                            <td>{{ $e->employee_name }}</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary border-0" onclick="openEditModal('{{ $e->id }}', '{{ $e->employee_number }}', '{{ $e->employee_name }}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <a href="{{ url('/admin/delete/'.$e->id) }}" class="btn btn-sm btn-outline-danger border-0" onclick="return confirm('Hapus peserta?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -133,56 +116,14 @@
 <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="border-radius: 20px;">
-            <form id="editForm" method="POST">
-                @csrf
-                <div class="modal-body p-4">
-                    <h5 class="fw-bold mb-4 text-center">Edit Data Peserta</h5>
-                    <div class="mb-3">
-                        <label class="small fw-bold text-muted">Nomor Karyawan</label>
-                        <input type="text" name="employee_number" id="edit_number" class="form-control btn-round" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="small fw-bold text-muted">Nama Lengkap</label>
-                        <input type="text" name="employee_name" id="edit_name" class="form-control btn-round" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100 btn-round py-2">UPDATE DATA</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="deleteEmployeeModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 20px;">
-            <div class="modal-body p-4 text-center">
-                <div class="text-danger mb-3">
-                    <i class="fas fa-user-times fa-4x"></i>
-                </div>
-                <h5 class="fw-bold">Hapus Peserta?</h5>
-                <p class="text-muted">Apakah Anda yakin ingin menghapus <span id="del_emp_name" class="fw-bold text-dark"></span> dari daftar undian?</p>
-                <div class="d-flex gap-2 mt-4">
-                    <button class="btn btn-light w-100 btn-round" data-bs-dismiss="modal">BATAL</button>
-                    <a id="confirm_del_emp" href="#" class="btn btn-danger w-100 btn-round">YA, HAPUS</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="deletePrizeModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 20px;">
-            <div class="modal-body p-4 text-center">
-                <div class="text-danger mb-3">
-                    <i class="fas fa-box-open fa-4x"></i>
-                </div>
-                <h5 class="fw-bold">Hapus Hadiah?</h5>
-                <p class="text-muted">Hapus hadiah <span id="del_prize_name" class="fw-bold text-dark"></span>? Tindakan ini tidak bisa dibatalkan.</p>
-                <div class="d-flex gap-2 mt-4">
-                    <button class="btn btn-light w-100 btn-round" data-bs-dismiss="modal">BATAL</button>
-                    <a id="confirm_del_prize" href="#" class="btn btn-danger w-100 btn-round">HAPUS HADIAH</a>
-                </div>
+            <div class="modal-body p-4">
+                <h5 class="fw-bold mb-3">Edit Data</h5>
+                <form id="editForm" method="POST">
+                    @csrf
+                    <input type="text" name="employee_number" id="edit_npk" class="form-control btn-round mb-2" required>
+                    <input type="text" name="employee_name" id="edit_nama" class="form-control btn-round mb-3" required>
+                    <button type="submit" class="btn btn-primary w-100 btn-round">UPDATE</button>
+                </form>
             </div>
         </div>
     </div>
@@ -190,23 +131,19 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Fungsi Mengisi Data Edit
-    function fillEditModal(id, num, name) {
+    function pilihHadiah(nama) { document.getElementById('input_hadiah_manual').value = nama; }
+    
+    function gasUndian() {
+        const h = document.getElementById('input_hadiah_manual').value;
+        if (!h) return alert("Pilih hadiah dulu!");
+        window.open("{{ url('/undian') }}?hadiah=" + encodeURIComponent(h), '_blank');
+    }
+
+    function openEditModal(id, npk, nama) {
         document.getElementById('editForm').action = '/admin/update/' + id;
-        document.getElementById('edit_number').value = num;
-        document.getElementById('edit_name').value = name;
-    }
-
-    // Fungsi Persiapan Hapus Peserta
-    function prepareDeleteEmployee(id, name) {
-        document.getElementById('del_emp_name').innerText = name;
-        document.getElementById('confirm_del_emp').href = '/admin/delete/' + id;
-    }
-
-    // Fungsi Persiapan Hapus Hadiah
-    function prepareDeletePrize(id, name) {
-        document.getElementById('del_prize_name').innerText = name;
-        document.getElementById('confirm_del_prize').href = '/admin/delete-prize/' + id;
+        document.getElementById('edit_npk').value = npk;
+        document.getElementById('edit_nama').value = nama;
+        new bootstrap.Modal(document.getElementById('editModal')).show();
     }
 </script>
 </body>

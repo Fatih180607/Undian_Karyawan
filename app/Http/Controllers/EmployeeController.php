@@ -5,29 +5,44 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Employee;
 use App\Models\Prize;
+use App\Models\Plant;
 use Illuminate\Support\Facades\File;
 
 class EmployeeController extends Controller
 {
     public function indexAdmin()
     {
-        $employees = Employee::orderBy('id', 'desc')->get();
+        $employees = Employee::with('plant')->orderBy('id', 'desc')->get();
         $prizes = Prize::all();
-        return view('admin', compact('employees', 'prizes'));
+        $plants = Plant::all();
+        return view('admin', compact('employees', 'prizes', 'plants'));
     }
 
     public function indexGacha(Request $request)
     {
-        $employees = Employee::all();
+        $query = Employee::query();
+        if ($request->has('plant_id') && $request->plant_id && $request->plant_id !== 'all') {
+            $query->where('plant_id', $request->plant_id);
+        }
+        $employees = $query->get();
         $prizes = Prize::all();
         $nama_hadiah_manual = $request->query('hadiah', 'Doorprize');
-        return view('gacha', compact('employees', 'prizes', 'nama_hadiah_manual'));
+        $selected_plant = $request->query('plant_id');
+        return view('gacha', compact('employees', 'prizes', 'nama_hadiah_manual', 'selected_plant'));
     }
 
     public function addEmployee(Request $request)
     {
-        $request->validate(['employee_number' => 'required', 'employee_name' => 'required']);
-        Employee::create(['employee_number' => $request->employee_number, 'employee_name' => $request->employee_name]);
+        $request->validate([
+            'employee_number' => 'required',
+            'employee_name' => 'required',
+            'plant_id' => 'required|exists:plants,id'
+        ]);
+        Employee::create([
+            'employee_number' => $request->employee_number,
+            'employee_name' => $request->employee_name,
+            'plant_id' => $request->plant_id
+        ]);
         return back();
     }
 
@@ -37,33 +52,58 @@ class EmployeeController extends Controller
             $file = $request->file('file_excel');
             $handle = fopen($file->getRealPath(), "r");
 
-            // Skip baris pertama (header NPK;Nama Karyawan)
+            // Skip header baris pertama
             fgetcsv($handle, 1000, ";");
 
             $count = 0;
+            $missingPlants = [];
+
             while (($data = fgetcsv($handle, 1000, ";")) !== FALSE) {
                 if (isset($data[0]) && isset($data[1])) {
+                    $plantId = null;
+                    if (isset($data[2]) && trim($data[2]) !== '') {
+                        $plantName = trim($data[2]);
+                        $plant = Plant::where('nama_plant', $plantName)->first();
+                        if ($plant) {
+                            $plantId = $plant->id;
+                        } else {
+                            $missingPlants[] = $plantName;
+                        }
+                    }
+
                     Employee::create([
                         'employee_number' => trim($data[0]),
                         'employee_name'   => trim($data[1]),
+                        'plant_id'        => $plantId,
                     ]);
                     $count++;
                 }
             }
             fclose($handle);
 
-            return back()->with('success', $count . ' Data berhasil diimport!');
+            $response = back()->with('success', $count . ' Data berhasil diimport!');
+            if (!empty($missingPlants)) {
+                $missingNames = implode(', ', array_unique($missingPlants));
+                $response = $response->with('warning', 'Plant tidak ditemukan untuk: ' . $missingNames);
+            }
+            return $response;
         }
         return back()->with('error', 'File tidak ditemukan');
     }
 
     public function updateEmployee(Request $request, $id)
     {
+        $request->validate([
+            'employee_number' => 'required',
+            'employee_name' => 'required',
+            'plant_id' => 'required|exists:plants,id'
+        ]);
         $employee = Employee::find($id);
         if ($employee) {
             $employee->update([
                 'employee_number' => $request->employee_number,
                 'employee_name' => $request->employee_name,
+                'plant_id' => $request->plant_id,
             ]);
         }
         return back();

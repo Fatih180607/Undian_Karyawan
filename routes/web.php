@@ -23,9 +23,15 @@ Route::post('/setting/background/update', [SettingController::class, 'updateBack
 */
 Route::get('/beasiswa-admin', [BeasiswaController::class, 'admin'])->name('beasiswa.admin');
 Route::post('/beasiswa/peserta/simpan', [BeasiswaController::class, 'simpanPeserta']);
-Route::post('/beasiswa/kuota-plant/update', [BeasiswaController::class, 'updateKuotaPlant']); // Rute Baru
-Route::get('/beasiswa-undi', [BeasiswaController::class, 'layarUndian'])->name('beasiswa.index');
+Route::post('/beasiswa/peserta/import', [BeasiswaController::class, 'importPeserta']);
+Route::post('/beasiswa/kategori/simpan', [BeasiswaController::class, 'simpanKategori']);
 Route::get('/beasiswa/kocok', [BeasiswaController::class, 'kocokBeasiswa']);
+Route::post('/beasiswa/kuota-plant/update', [BeasiswaController::class, 'updateKuotaPlant']); // Rute Baru
+Route::post('/beasiswa/peserta/update/{id}', [BeasiswaController::class, 'updatePeserta']);
+Route::post('/beasiswa/peserta/delete/{id}', [BeasiswaController::class, 'deletePeserta']);
+Route::post('/beasiswa/peserta/reset', [BeasiswaController::class, 'resetPeserta']);
+Route::get('/beasiswa-undi', [BeasiswaController::class, 'layarUndian'])->name('beasiswa.index');
+Route::get('/beasiswa/export-pemenang', [BeasiswaController::class, 'exportPemenang'])->name('beasiswa.export');
 
 /*
 |--------------------------------------------------------------------------

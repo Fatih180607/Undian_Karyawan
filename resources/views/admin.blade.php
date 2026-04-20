@@ -22,6 +22,7 @@
         .img-container { width: 100%; aspect-ratio: 1/1; background: #f8f9fa; display: flex; align-items: center; justify-content: center; }
         .prize-img { width: 100%; height: 100%; object-fit: contain; padding: 10px; }
         .btn-delete-prize { position: absolute; top: 5px; right: 5px; background: rgba(255, 71, 87, 0.9); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+        .plant-select { background-color: #f8f9fa; border: 2px solid #6c757d; color: #495057; }
     </style>
 </head>
 <body>
@@ -44,19 +45,35 @@
                     <a class="nav-link text-warning fw-bold" href="/setting"><i class="fas fa-cog me-1"></i>Settings</a>
                 </li>
             </ul>
-            <div class="d-flex gap-2">
-                <a href="/undian" target="_blank" class="btn btn-outline-warning btn-round btn-sm px-3">
-                    LAYAR DOORPRIZE
-                </a>
-                <a href="/beasiswa-undi" target="_blank" class="btn btn-warning btn-round btn-sm px-3 text-dark">
-                    LAYAR BEASISWA
-                </a>
-            </div>
         </div>
     </div>
 </nav>
 
 <div class="container">
+    @if(session('success') || session('warning') || session('error'))
+    <div class="row mb-3">
+        <div class="col-12">
+            @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
+            @if(session('warning'))
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                {{ session('warning') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
+            @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
+        </div>
+    </div>
+    @endif
     <div class="row">
         <div class="col-lg-4">
             <div class="card p-4 mb-3 text-center" style="background: #2d3436; color: white;">
@@ -69,7 +86,13 @@
                 <form action="/admin/add-employee" method="POST">
                     @csrf
                     <input type="text" name="employee_number" class="form-control btn-round mb-2" placeholder="NPK" required>
-                    <input type="text" name="employee_name" class="form-control btn-round mb-3" placeholder="Nama" required>
+                    <input type="text" name="employee_name" class="form-control btn-round mb-2" placeholder="Nama" required>
+                    <select name="plant_id" class="form-control btn-round mb-3 plant-select" required>
+                        <option value="">Pilih Plant</option>
+                        @foreach($plants as $plant)
+                        <option value="{{ $plant->id }}">{{ $plant->nama_plant }}</option>
+                        @endforeach
+                    </select>
                     <button class="btn btn-primary w-100 btn-round">SIMPAN</button>
                 </form>
             </div>
@@ -102,7 +125,7 @@
                 <h6 class="fw-bold text-warning">PILIH HADIAH UNTUK DIUNDI</h6>
                 <div class="d-flex gap-2">
                     <input type="text" id="input_hadiah_manual" class="form-control form-control-lg btn-round text-center" placeholder="Klik tombol 'PILIH' pada hadiah di bawah...">
-                    <button class="btn btn-warning btn-round px-4" onclick="gasUndian()">GAS</button>
+                    <button class="btn btn-warning btn-round px-4" onclick="gasUndian()">Undi Disini</button>
                 </div>
             </div>
 
@@ -125,14 +148,15 @@
 
             <div class="card p-4">
                 <table class="table table-hover">
-                    <thead><tr><th>NPK</th><th>Nama</th><th class="text-center">Aksi</th></tr></thead>
+                    <thead><tr><th>NPK</th><th>Nama</th><th>Plant</th><th class="text-center">Aksi</th></tr></thead>
                     <tbody>
                         @foreach($employees as $e)
                         <tr>
                             <td>{{ $e->employee_number }}</td>
                             <td>{{ $e->employee_name }}</td>
+                            <td>{{ $e->plant->nama_plant ?? 'N/A' }}</td>
                             <td class="text-center">
-                                <button class="btn btn-sm btn-outline-primary border-0" onclick="openEditModal('{{ $e->id }}', '{{ $e->employee_number }}', '{{ $e->employee_name }}')">
+                                <button class="btn btn-sm btn-outline-primary border-0" onclick="openEditModal('{{ $e->id }}', '{{ $e->employee_number }}', '{{ $e->employee_name }}', '{{ $e->plant_id }}')">
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 <a href="{{ url('/admin/delete/'.$e->id) }}" class="btn btn-sm btn-outline-danger border-0" onclick="return confirm('Hapus peserta?')">
@@ -156,9 +180,33 @@
                 <form id="editForm" method="POST">
                     @csrf
                     <input type="text" name="employee_number" id="edit_npk" class="form-control btn-round mb-2" required>
-                    <input type="text" name="employee_name" id="edit_nama" class="form-control btn-round mb-3" required>
+                    <input type="text" name="employee_name" id="edit_nama" class="form-control btn-round mb-2" required>
+                    <select name="plant_id" id="edit_plant" class="form-control btn-round mb-3 plant-select" required>
+                        <option value="">Pilih Plant</option>
+                        @foreach($plants as $plant)
+                        <option value="{{ $plant->id }}">{{ $plant->nama_plant }}</option>
+                        @endforeach
+                    </select>
                     <button type="submit" class="btn btn-primary w-100 btn-round">UPDATE</button>
                 </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="plantModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px;">
+            <div class="modal-body p-4">
+                <h5 class="fw-bold mb-3">Pilih Plant untuk Undian</h5>
+                <select id="select_plant" class="form-control btn-round mb-3 plant-select" required>
+                    <option value="" selected disabled>Pilih Plant</option>
+                    <option value="all">Semua Plant</option>
+                    @foreach($plants as $plant)
+                    <option value="{{ $plant->id }}">{{ $plant->nama_plant }}</option>
+                    @endforeach
+                </select>
+                <button type="button" class="btn btn-warning w-100 btn-round" onclick="startUndian()">MULAI UNDIAN</button>
             </div>
         </div>
     </div>
@@ -171,14 +219,23 @@
     function gasUndian() {
         const h = document.getElementById('input_hadiah_manual').value;
         if (!h) return alert("Pilih hadiah dulu!");
-        window.open("{{ url('/undian') }}?hadiah=" + encodeURIComponent(h), '_blank');
+        new bootstrap.Modal(document.getElementById('plantModal')).show();
     }
 
-    function openEditModal(id, npk, nama) {
+    function openEditModal(id, npk, nama, plant_id) {
         document.getElementById('editForm').action = '/admin/update/' + id;
         document.getElementById('edit_npk').value = npk;
         document.getElementById('edit_nama').value = nama;
+        document.getElementById('edit_plant').value = plant_id;
         new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    function startUndian() {
+        const h = document.getElementById('input_hadiah_manual').value;
+        const p = document.getElementById('select_plant').value;
+        if (!p) return alert("Pilih plant dulu!");
+        window.open("{{ url('/undian') }}?hadiah=" + encodeURIComponent(h) + "&plant_id=" + p, '_blank');
+        bootstrap.Modal.getInstance(document.getElementById('plantModal')).hide();
     }
 </script>
 </body>

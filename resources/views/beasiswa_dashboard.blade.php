@@ -22,19 +22,40 @@
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark navbar-admin shadow-sm mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-admin shadow-sm mb-4">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="#">RAT K2MS <span class="text-warning">BEASISWA</span></a>
+        <a class="navbar-brand fw-bold" href="#">RAT K2MS <span class="text-warning">SYSTEM</span></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link" href="/"><i class="fas fa-gift me-1"></i> Dashboard Doorprize</a></li>
-                <li class="nav-item ms-lg-3"><a class="nav-link active" href="/beasiswa-admin"><i class="fas fa-graduation-cap me-1"></i> Dashboard Beasiswa</a></li>
-                <li class="nav-item ms-lg-3"><a class="nav-link text-warning fw-bold" href="/setting"><i class="fas fa-cog me-1"></i>Settings</a></li>
+                <li class="nav-item">
+                    <a class="nav-link {{ Request::is('/') ? 'active fw-bold' : '' }}" href="/">
+                        <i class="fas fa-gift me-1"></i> Dashboard Doorprize
+                    </a>
+                </li>
+                <li class="nav-item ms-lg-3">
+                    <a class="nav-link {{ Request::is('beasiswa-admin*') ? 'active fw-bold' : '' }}" href="/beasiswa-admin">
+                        <i class="fas fa-graduation-cap me-1"></i> Dashboard Beasiswa
+                    </a>
+                </li>
+                <li class="nav-item ms-lg-3">
+                    <a class="nav-link {{ Request::is('setting*') ? 'active fw-bold' : '' }}" href="/setting">
+                        <i class="fas fa-cog me-1"></i> Settings
+                    </a>
+                </li>
+                <li class="nav-item ms-lg-3">
+                    <a class="nav-link {{ Request::is('about') ? 'active fw-bold' : '' }}" href="/about"
+                       style="{{ Request::is('about') ? 'border-bottom: 2px solid #ffc107; color:white;' : '' }}">
+                        <i class="fas fa-info-circle me-1"></i> Tentang
+                    </a>
+                </li>
             </ul>
-            <a href="/beasiswa-undi" target="_blank" class="btn btn-warning btn-round btn-sm px-4 text-dark">
+        </div>
+     <a href="/beasiswa-undi" target="_blank" class="btn btn-warning btn-round btn-sm px-4 text-dark">
                 <i class="fas fa-play me-1"></i> UNDI BEASISWA DISINI
             </a>
-        </div>
     </div>
 </nav>
 
@@ -97,7 +118,7 @@
                     @csrf
                     <div class="mb-2"><small class="text-muted text-center d-block">Gunakan file CSV untuk data massal.</small></div>
                     <div class="mb-2"><small class="text-muted text-center d-block">Format: nama_anak,jenjang_sekolah,npk_orang_tua,nama_orang_tua,nama_plant</small></div>
-                    <div class="mb-2"><small class="text-muted text-center d-block">Contoh: Fatih,SMA,98718273,Daffa Al Rizik,BEKASI PLANT</small></div>
+
                     <input type="file" name="file_excel" class="form-control mb-2" accept=".csv,text/csv" required>
                     <button type="submit" class="btn btn-info w-100 btn-round text-white">UPLOAD DATA ANAK</button>
                 </form>

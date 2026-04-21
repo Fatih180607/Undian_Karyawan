@@ -29,20 +29,32 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark navbar-admin shadow-sm mb-4">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="#">RAT K2MS</a>
+        <a class="navbar-brand fw-bold" href="#">RAT K2MS <span class="text-warning">SYSTEM</span></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="/"><i class="fas fa-gift me-1"></i> Dashboard Doorprize</a>
+                    <a class="nav-link {{ Request::is('/') ? 'active fw-bold' : '' }}" href="/">
+                        <i class="fas fa-gift me-1"></i> Dashboard Doorprize
+                    </a>
                 </li>
                 <li class="nav-item ms-lg-3">
-                    <a class="nav-link" href="/beasiswa-admin"><i class="fas fa-graduation-cap me-1"></i> Dashboard Beasiswa</a>
+                    <a class="nav-link {{ Request::is('beasiswa-admin*') ? 'active fw-bold' : '' }}" href="/beasiswa-admin">
+                        <i class="fas fa-graduation-cap me-1"></i> Dashboard Beasiswa
+                    </a>
                 </li>
                 <li class="nav-item ms-lg-3">
-                    <a class="nav-link text-warning fw-bold" href="/setting"><i class="fas fa-cog me-1"></i>Settings</a>
+                    <a class="nav-link {{ Request::is('setting*') ? 'active fw-bold' : '' }}" href="/setting">
+                        <i class="fas fa-cog me-1"></i> Settings
+                    </a>
+                </li>
+                <li class="nav-item ms-lg-3">
+                    <a class="nav-link {{ Request::is('about') ? 'active fw-bold' : '' }}" href="/about"
+                       style="{{ Request::is('about') ? 'border-bottom: 2px solid #ffc107; color:white;' : '' }}">
+                        <i class="fas fa-info-circle me-1"></i> Tentang
+                    </a>
                 </li>
             </ul>
         </div>
@@ -74,6 +86,7 @@
         </div>
     </div>
     @endif
+
     <div class="row">
         <div class="col-lg-4">
             <div class="card p-4 mb-3 text-center" style="background: #2d3436; color: white;">
@@ -147,6 +160,16 @@
             </div>
 
             <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0 text-secondary">Data Peserta Terdaftar</h6>
+                    <form action="/admin/delete-all-employees" method="POST" onsubmit="return confirm('PERHATIAN: Ini akan menghapus SELURUH data peserta. Anda yakin?')">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-outline-danger btn-round px-3">
+                            <i class="fas fa-trash-alt me-1"></i> Hapus Semua
+                        </button>
+                    </form>
+                </div>
+
                 <table class="table table-hover">
                     <thead><tr><th>NPK</th><th>Nama</th><th>Plant</th><th class="text-center">Aksi</th></tr></thead>
                     <tbody>

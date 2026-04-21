@@ -47,3 +47,12 @@ Route::get('/admin/delete/{id}', [EmployeeController::class, 'deleteEmployee']);
 Route::post('/admin/add-prize', [EmployeeController::class, 'addPrize']);
 Route::get('/admin/delete-prize/{id}', [EmployeeController::class, 'deletePrize']);
 Route::post('/win', [EmployeeController::class, 'storeWinner']);
+
+Route::get('/about', function () {
+    return view('about');
+});
+
+Route::post('/admin/delete-all-employees', function() {
+    \App\Models\Employee::truncate(); // Ini bakal ngosongin tabel & reset ID ke 1
+    return redirect()->back()->with('success', 'Semua data peserta berhasil dibersihkan!');
+});

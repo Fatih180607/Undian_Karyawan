@@ -18,22 +18,34 @@
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark mb-4 shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-admin shadow-sm mb-4">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="#">RAT K2MS <span class="text-warning">SETTINGS</span></a>
+        <a class="navbar-brand fw-bold" href="#">RAT K2MS <span class="text-warning">SYSTEM</span></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
+            <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('admin.index') }}"><i class="fas fa-gift me-1"></i> Dashboard Doorprize</a>
+                    <a class="nav-link {{ Request::is('/') ? 'active fw-bold' : '' }}" href="/">
+                        <i class="fas fa-gift me-1"></i> Dashboard Doorprize
+                    </a>
                 </li>
                 <li class="nav-item ms-lg-3">
-                    <a class="nav-link" href="{{ route('beasiswa.admin') }}"><i class="fas fa-graduation-cap me-1"></i> Dashboard Beasiswa</a>
+                    <a class="nav-link {{ Request::is('beasiswa-admin*') ? 'active fw-bold' : '' }}" href="/beasiswa-admin">
+                        <i class="fas fa-graduation-cap me-1"></i> Dashboard Beasiswa
+                    </a>
                 </li>
                 <li class="nav-item ms-lg-3">
-                    <a class="nav-link active text-warning fw-bold" href="/setting"><i class="fas fa-cog me-1"></i> SETTING</a>
+                    <a class="nav-link {{ Request::is('setting*') ? 'active fw-bold' : '' }}" href="/setting">
+                        <i class="fas fa-cog me-1"></i> Settings
+                    </a>
+                </li>
+                <li class="nav-item ms-lg-3">
+                    <a class="nav-link {{ Request::is('about') ? 'active fw-bold' : '' }}" href="/about"
+                       style="{{ Request::is('about') ? 'border-bottom: 2px solid #ffc107; color:white;' : '' }}">
+                        <i class="fas fa-info-circle me-1"></i> Tentang
+                    </a>
                 </li>
             </ul>
         </div>
@@ -95,25 +107,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="col-md-6">
-            <div class="card p-4 h-100">
-                <h5 class="fw-bold mb-3 text-success"><i class="fas fa-image me-2"></i> Background Website Global</h5>
-                <p class="text-muted small">Upload gambar untuk latar belakang semua halaman undian.</p>
-
-                <form action="/setting/background/update" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <div class="mb-3">
-                        <input type="file" name="image" class="form-control" required>
-                    </div>
-                    <button class="btn btn-success w-100 btn-round" type="submit">UPDATE BACKGROUND</button>
-                </form>
-
-                <div class="mt-4 border rounded p-4 text-center bg-light text-muted small">
-                    <i class="fas fa-images fa-2x mb-2"></i>
-                    <p class="mb-0">Fokus ke Plant dulu sesuai permintaan.</p>
-                </div>
-            </div>
         </div>
     </div>
 </div>

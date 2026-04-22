@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Employee;
 use App\Models\Prize;
 use App\Models\Plant;
+use App\Models\DoorprizeWinner;
 use Illuminate\Support\Facades\File;
 
 class EmployeeController extends Controller
@@ -18,19 +19,25 @@ class EmployeeController extends Controller
         return view('admin', compact('employees', 'prizes', 'plants'));
     }
 
-    public function indexGacha(Request $request)
-    {
-        $query = Employee::query();
-        if ($request->has('plant_id') && $request->plant_id && $request->plant_id !== 'all') {
-            $query->where('plant_id', $request->plant_id);
-        }
-        $employees = $query->get();
-        $prizes = Prize::all();
-        $nama_hadiah_manual = $request->query('hadiah', 'Doorprize');
-        $selected_plant = $request->query('plant_id');
-        return view('gacha', compact('employees', 'prizes', 'nama_hadiah_manual', 'selected_plant'));
+public function indexGacha(Request $request)
+{
+    // Filter karyawan yang BELUM MENANG + Ambil Relasi Plant
+    $query = Employee::with('plant')->where('is_winner', false);
+
+    // Filter per plant jika dipilih spesifik
+    if ($request->has('plant_id') && $request->plant_id && $request->plant_id !== 'all') {
+        $query->where('plant_id', $request->plant_id);
     }
 
+    $employees = $query->get();
+    $prizes = Prize::all();
+    $plants = Plant::all();
+
+    $nama_hadiah_manual = $request->query('hadiah', 'Doorprize');
+    $selected_plant = $request->query('plant_id');
+
+    return view('gacha', compact('employees', 'prizes', 'nama_hadiah_manual', 'selected_plant', 'plants'));
+}
     public function addEmployee(Request $request)
     {
         $request->validate([
@@ -141,7 +148,21 @@ class EmployeeController extends Controller
     {
         $employee = Employee::find($request->id_employee);
         if ($employee) {
+            // Simpan ke table doorprize_winners (tanpa mengurangi stok hadiah)
+            DoorprizeWinner::create([
+                'nama_hadiah' => $request->nama_hadiah,
+                'nama_karyawan' => $employee->employee_name,
+                'nomor_karyawan' => $employee->employee_number,
+                'plant_id' => $employee->plant_id,
+                'nama_plant' => $employee->plant->nama_plant,
+                'foto_hadiah' => $request->foto_hadiah,
+                'waktu_menang' => now(),
+                'nomor_undian' => $request->nomor_undian ?? 1,
+            ]);
+
+            // Hapus dari employees agar tidak bisa menang lagi
             $employee->delete();
+
             return response()->json(['status' => 'success']);
         }
         return response()->json(['status' => 'failed'], 404);

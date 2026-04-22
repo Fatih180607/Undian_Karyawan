@@ -256,9 +256,31 @@
     function startUndian() {
         const h = document.getElementById('input_hadiah_manual').value;
         const p = document.getElementById('select_plant').value;
-        if (!p) return alert("Pilih plant dulu!");
-        window.open("{{ url('/undian') }}?hadiah=" + encodeURIComponent(h) + "&plant_id=" + p, '_blank');
-        bootstrap.Modal.getInstance(document.getElementById('plantModal')).hide();
+        
+        console.log('Debug startUndian:');
+        console.log('Hadiah:', h);
+        console.log('Plant ID:', p);
+        
+        if (!h) {
+            alert("Pilih hadiah dulu!");
+            return;
+        }
+        
+        if (!p) {
+            alert("Pilih plant dulu!");
+            return;
+        }
+        
+        const url = "{{ url('/undian') }}?hadiah=" + encodeURIComponent(h) + "&plant_id=" + p;
+        console.log('URL yang akan dibuka:', url);
+        
+        try {
+            window.open(url, '_blank');
+            bootstrap.Modal.getInstance(document.getElementById('plantModal')).hide();
+        } catch (error) {
+            console.error('Error membuka window:', error);
+            alert('Error membuka halaman undian. Silakan coba lagi atau cek console browser.');
+        }
     }
 </script>
 </body>

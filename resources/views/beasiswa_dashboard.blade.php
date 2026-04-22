@@ -22,7 +22,7 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-admin shadow-sm mb-4">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-admin shadow-sm mb-4">
     <div class="container">
         <a class="navbar-brand fw-bold" href="#">RAT K2MS <span class="text-warning">SYSTEM</span></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -45,17 +45,11 @@
                         <i class="fas fa-cog me-1"></i> Settings
                     </a>
                 </li>
-                <li class="nav-item ms-lg-3">
-                    <a class="nav-link {{ Request::is('about') ? 'active fw-bold' : '' }}" href="/about"
-                       style="{{ Request::is('about') ? 'border-bottom: 2px solid #ffc107; color:white;' : '' }}">
-                        <i class="fas fa-info-circle me-1"></i> Tentang
-                    </a>
-                </li>
             </ul>
         </div>
-     <a href="/beasiswa-undi" target="_blank" class="btn btn-warning btn-round btn-sm px-4 text-dark">
-                <i class="fas fa-play me-1"></i> UNDI BEASISWA DISINI
-            </a>
+        <a href="/beasiswa-undi" target="_blank" class="btn btn-warning btn-round btn-sm px-4 text-dark">
+            <i class="fas fa-play me-1"></i> UNDI BEASISWA DISINI
+        </a>
     </div>
 </nav>
 
@@ -105,22 +99,17 @@
                                 <option value="{{ $p->id }}">{{ $p->nama_plant }}</option>
                             @endforeach
                         </select>
-                        <small class="text-muted">Pilih plant terlebih dahulu, lalu pilih jenjang yang tersedia untuk plant tersebut.</small>
                     </div>
-
                     <button class="btn btn-success w-100 btn-round">SIMPAN PESERTA</button>
                 </form>
             </div>
 
             <div class="card p-4 mb-3">
-                <h6 class="fw-bold text-info mb-3"><i class="fas fa-file-excel me-2"></i>Import Peserta (Excel/CSV)</h6>
+                <h6 class="fw-bold text-info mb-3"><i class="fas fa-file-excel me-2"></i>Import Peserta (CSV)</h6>
                 <form action="/beasiswa/peserta/import" method="POST" enctype="multipart/form-data">
                     @csrf
-                    <div class="mb-2"><small class="text-muted text-center d-block">Gunakan file CSV untuk data massal.</small></div>
-                    <div class="mb-2"><small class="text-muted text-center d-block">Format: nama_anak,jenjang_sekolah,npk_orang_tua,nama_orang_tua,nama_plant</small></div>
-
                     <input type="file" name="file_excel" class="form-control mb-2" accept=".csv,text/csv" required>
-                    <button type="submit" class="btn btn-info w-100 btn-round text-white">UPLOAD DATA ANAK</button>
+                    <button type="submit" class="btn btn-info w-100 btn-round text-white">UPLOAD DATA</button>
                 </form>
             </div>
         </div>
@@ -133,20 +122,13 @@
                     <div class="col-md-6">
                         <div class="card p-3 shadow-sm h-100">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <div>
-                                    <strong>{{ $p->nama_plant }}</strong>
-                                </div>
-                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalEditJenjang{{ $p->id }}">Atur Jenjang</button>
+                                <strong>{{ $p->nama_plant }}</strong>
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalEditJenjang{{ $p->id }}">Atur</button>
                             </div>
                             <div>
-                                @php $plantCategories = $kategori->where('plant_id', $p->id); @endphp
-                                @if($plantCategories->isEmpty())
-                                    <div class="text-muted">Belum ada jenjang untuk plant ini.</div>
-                                @else
-                                    @foreach($plantCategories as $k)
-                                        <span class="badge bg-secondary me-1 mb-1">{{ $k->jenjang_sekolah }}</span>
-                                    @endforeach
-                                @endif
+                                @foreach($kategori->where('plant_id', $p->id) as $k)
+                                    <span class="badge bg-secondary me-1 mb-1">{{ $k->jenjang_sekolah }}</span>
+                                @endforeach
                             </div>
                         </div>
                     </div>
@@ -156,13 +138,20 @@
 
             <div class="card p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="fw-bold mb-0"><i class="fas fa-list me-2"></i>Daftar Peserta Beasiswa</h6>
-                    <form action="/beasiswa/peserta/reset" method="POST" onsubmit="return confirm('Hapus semua peserta beasiswa?');">
-                        @csrf
-                        <button type="submit" class="btn btn-sm btn-danger">Hapus Semua Data</button>
-                    </form>
+                    <h6 class="fw-bold mb-0"><i class="fas fa-list me-2"></i>Daftar Peserta</h6>
+                    <div class="d-flex gap-2">
+                        <select id="filterStatus" class="form-select form-select-sm btn-round w-auto" onchange="filterPeserta()">
+                            <option value="all">Semua ({{ $peserta->count() }})</option>
+                            <option value="winner">Pemenang ({{ $peserta->where('is_winner', true)->count() }})</option>
+                            <option value="candidate">Kandidat ({{ $peserta->where('is_winner', false)->count() }})</option>
+                        </select>
+                        <form action="/beasiswa/peserta/reset" method="POST" onsubmit="return confirm('Hapus semua peserta?');">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-danger">Reset</button>
+                        </form>
+                    </div>
                 </div>
-                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
                     <table class="table table-hover small">
                         <thead class="sticky-top bg-white">
                             <tr>
@@ -175,16 +164,25 @@
                         </thead>
                         <tbody>
                             @foreach($peserta as $ps)
-                            <tr>
-                                <td>{{ $ps->nama_anak }}</td>
+                            <tr class="{{ $ps->is_winner ? 'table-success is-winner-row' : 'is-candidate-row' }}">
+                                <td>
+                                    {{ $ps->nama_anak }}
+                                    @if($ps->is_winner)
+                                        <span class="badge bg-success ms-1"><i class="fas fa-trophy"></i></span>
+                                    @endif
+                                </td>
                                 <td><span class="badge bg-secondary">{{ $ps->jenjang_sekolah }}</span></td>
                                 <td>{{ $ps->plant->nama_plant ?? '-' }}</td>
-                                <td>{{ $ps->nama_orang_tua }} ({{ $ps->npk_orang_tua }})</td>
+                                <td>{{ $ps->nama_orang_tua }}</td>
                                 <td class="text-center">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="modal" data-bs-target="#editPesertaModal" data-id="{{ $ps->id }}" data-nama="{{ $ps->nama_anak }}" data-jenjang="{{ $ps->jenjang_sekolah }}" data-npk="{{ $ps->npk_orang_tua }}" data-namaortu="{{ $ps->nama_orang_tua }}" data-plant="{{ $ps->plant_id }}" onclick="openEditPeserta(this)">Edit</button>
-                                    <form action="/beasiswa/peserta/delete/{{ $ps->id }}" method="POST" class="d-inline-block" onsubmit="return confirm('Hapus peserta ini?');">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-secondary me-1"
+                                            onclick="openEditPeserta('{{ $ps->id }}', '{{ addslashes($ps->nama_anak) }}', '{{ $ps->jenjang_sekolah }}', '{{ $ps->npk_orang_tua }}', '{{ addslashes($ps->nama_orang_tua) }}', '{{ $ps->plant_id }}')">
+                                        Edit
+                                    </button>
+                                    <form action="/beasiswa/peserta/delete/{{ $ps->id }}" method="POST" class="d-inline-block">
                                         @csrf
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus?')">Hapus</button>
                                     </form>
                                 </td>
                             </tr>
@@ -197,70 +195,20 @@
     </div>
 </div>
 
-@foreach($plants as $p)
-<!-- Modal Edit Jenjang untuk Plant {{ $p->nama_plant }} -->
-<div class="modal fade" id="modalEditJenjang{{ $p->id }}" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Jenjang untuk Plant: {{ $p->nama_plant }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="/beasiswa/kategori/simpan" method="POST">
-                @csrf
-                <input type="hidden" name="plant_id" value="{{ $p->id }}">
-                <div class="modal-body">
-                    <div class="row gx-2 mb-3 text-muted small fw-semibold">
-                        <div class="col-5">Jenjang</div>
-                        <div class="col-4">Nominal Beasiswa</div>
-                        <div class="col-3">Kuota</div>
-                    </div>
-                    <div id="jenjangRows{{ $p->id }}">
-                        @foreach($kategori->where('plant_id', $p->id) as $k)
-                        <div class="row g-2 jenjang-row mb-3 align-items-end">
-                            <input type="hidden" name="kategori_id[]" value="{{ $k->id }}">
-                            <div class="col-5">
-                                <input type="text" name="jenjang_sekolah[]" class="form-control btn-round" value="{{ $k->jenjang_sekolah }}" required placeholder="Nama Jenjang (misal SD)">
-                            </div>
-                            <div class="col-4">
-                                <input type="number" name="nominal[]" class="form-control btn-round" value="{{ $k->nominal }}" required placeholder="Nominal Beasiswa">
-                            </div>
-                            <div class="col-2">
-                                <input type="number" name="kuota[]" class="form-control btn-round" value="{{ $k->kuota }}" min="0" placeholder="Kuota">
-                            </div>
-                            <div class="col-1">
-                                <button type="button" class="btn btn-danger btn-sm w-100" onclick="hapusJenjangRow(this)">×</button>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                    <button type="button" class="btn btn-outline-success btn-sm" onclick="tambahJenjangRow({{ $p->id }})">+ Tambah Jenjang</button>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan Jenjang</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-@endforeach
-
-<!-- Modal Edit Peserta -->
-<div class="modal fade" id="editPesertaModal" tabindex="-1">
+<div class="modal fade" id="editPesertaModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Edit Peserta Beasiswa</h5>
+                <h5 class="modal-title">Edit Peserta</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="formEditPeserta" method="POST" action="/beasiswa/peserta/update/0">
+            <form id="formEditPeserta" method="POST">
                 @csrf
                 <div class="modal-body">
                     <input type="hidden" id="editPesertaId" name="peserta_id">
                     <div class="mb-3">
                         <label class="small fw-bold">Plant</label>
-                        <select id="editPlantSelect" name="plant_id" class="form-select btn-round mb-2" required onchange="refreshEditJenjangOptions()">
+                        <select id="editPlantSelect" name="plant_id" class="form-select btn-round" required onchange="refreshEditJenjangOptions()">
                             <option value="">Pilih Plant...</option>
                             @foreach($plants as $p)
                                 <option value="{{ $p->id }}">{{ $p->nama_plant }}</option>
@@ -269,17 +217,16 @@
                     </div>
                     <div class="mb-3">
                         <label class="small fw-bold">Jenjang</label>
-                        <select id="editJenjangSelect" name="jenjang_sekolah" class="form-select btn-round" disabled required>
-                            <option value="">Pilih plant dulu...</option>
+                        <select id="editJenjangSelect" name="jenjang_sekolah" class="form-select btn-round" required>
+                            <option value="">Pilih Jenjang...</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="small fw-bold">NPK Orang Tua</label>
-                        <input type="text" id="editNpk" name="npk_orang_tua" class="form-control btn-round" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="small fw-bold">Nama Orang Tua</label>
-                        <input type="text" id="editNamaOrtu" name="nama_orang_tua" class="form-control btn-round" required>
+                        <label class="small fw-bold">NPK & Nama Orang Tua</label>
+                        <div class="input-group">
+                            <input type="text" id="editNpk" name="npk_orang_tua" class="form-control" placeholder="NPK" required>
+                            <input type="text" id="editNamaOrtu" name="nama_orang_tua" class="form-control w-50" placeholder="Nama Karyawan" required>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="small fw-bold">Nama Anak</label>
@@ -287,109 +234,109 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                    <button type="submit" class="btn btn-primary btn-round px-4">Simpan Perubahan</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
+@foreach($plants as $p)
+<div class="modal fade" id="modalEditJenjang{{ $p->id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Atur Jenjang: {{ $p->nama_plant }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/beasiswa/kategori/simpan" method="POST">
+                @csrf
+                <input type="hidden" name="plant_id" value="{{ $p->id }}">
+                <div class="modal-body">
+                    <div id="jenjangRows{{ $p->id }}">
+                        @foreach($kategori->where('plant_id', $p->id) as $k)
+                        <div class="row g-2 mb-2 jenjang-row">
+                            <input type="hidden" name="kategori_id[]" value="{{ $k->id }}">
+                            <div class="col-5"><input type="text" name="jenjang_sekolah[]" class="form-control" value="{{ $k->jenjang_sekolah }}" required></div>
+                            <div class="col-4"><input type="number" name="nominal[]" class="form-control" value="{{ $k->nominal }}" required></div>
+                            <div class="col-2"><input type="number" name="kuota[]" class="form-control" value="{{ $k->kuota }}"></div>
+                            <div class="col-1"><button type="button" class="btn btn-danger" onclick="this.closest('.row').remove()">×</button></div>
+                        </div>
+                        @endforeach
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-success" onclick="tambahJenjangRow({{ $p->id }})">+ Tambah</button>
+                </div>
+                <div class="modal-footer"><button type="submit" class="btn btn-primary">Simpan</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     const kategoriByPlant = @json($kategori->groupBy('plant_id')->map(function($items){ return $items->map(function($item){ return ['jenjang_sekolah' => $item->jenjang_sekolah, 'nominal' => $item->nominal]; }); })->toArray());
 
     function refreshJenjangOptions() {
         const plantId = document.getElementById('plantSelect').value;
         const jenjangSelect = document.getElementById('jenjangSelect');
-        jenjangSelect.innerHTML = '';
-
-        if (!plantId || !kategoriByPlant[plantId] || kategoriByPlant[plantId].length === 0) {
-            jenjangSelect.innerHTML = '<option value="">Tidak ada jenjang untuk plant ini</option>';
-            jenjangSelect.disabled = true;
-            return;
-        }
-
-        jenjangSelect.disabled = false;
         jenjangSelect.innerHTML = '<option value="">Pilih Jenjang...</option>';
-        kategoriByPlant[plantId].forEach(item => {
-            const opt = document.createElement('option');
-            opt.value = item.jenjang_sekolah;
-            opt.textContent = `${item.jenjang_sekolah} (Rp ${Number(item.nominal).toLocaleString('id-ID')})`;
-            jenjangSelect.appendChild(opt);
-        });
+        if (kategoriByPlant[plantId]) {
+            jenjangSelect.disabled = false;
+            kategoriByPlant[plantId].forEach(item => {
+                jenjangSelect.innerHTML += `<option value="${item.jenjang_sekolah}">${item.jenjang_sekolah}</option>`;
+            });
+        } else {
+            jenjangSelect.disabled = true;
+        }
+    }
+
+    // FUNGSI UTAMA EDIT
+    function openEditPeserta(id, namaAnak, jenjang, npk, namaOrtu, plantId) {
+        document.getElementById('editPesertaId').value = id;
+        document.getElementById('editNamaAnak').value = namaAnak;
+        document.getElementById('editNpk').value = npk;
+        document.getElementById('editNamaOrtu').value = namaOrtu;
+        document.getElementById('editPlantSelect').value = plantId;
+
+        // Refresh dropdown jenjang di modal edit
+        refreshEditJenjangOptions(jenjang);
+
+        // Set Action URL
+        document.getElementById('formEditPeserta').action = '/beasiswa/peserta/update/' + id;
+
+        // Munculkan Modal
+        var myModal = new bootstrap.Modal(document.getElementById('editPesertaModal'));
+        myModal.show();
     }
 
     function refreshEditJenjangOptions(selectedJenjang = '') {
         const plantId = document.getElementById('editPlantSelect').value;
         const jenjangSelect = document.getElementById('editJenjangSelect');
-        jenjangSelect.innerHTML = '';
-
-        if (!plantId || !kategoriByPlant[plantId] || kategoriByPlant[plantId].length === 0) {
-            jenjangSelect.innerHTML = '<option value="">Tidak ada jenjang untuk plant ini</option>';
-            jenjangSelect.disabled = true;
-            return;
-        }
-
-        jenjangSelect.disabled = false;
         jenjangSelect.innerHTML = '<option value="">Pilih Jenjang...</option>';
-        kategoriByPlant[plantId].forEach(item => {
-            const opt = document.createElement('option');
-            opt.value = item.jenjang_sekolah;
-            opt.textContent = `${item.jenjang_sekolah} (Rp ${Number(item.nominal).toLocaleString('id-ID')})`;
-            if (item.jenjang_sekolah === selectedJenjang) {
-                opt.selected = true;
-            }
-            jenjangSelect.appendChild(opt);
-        });
+
+        if (kategoriByPlant[plantId]) {
+            kategoriByPlant[plantId].forEach(item => {
+                const isSelected = item.jenjang_sekolah === selectedJenjang ? 'selected' : '';
+                jenjangSelect.innerHTML += `<option value="${item.jenjang_sekolah}" ${isSelected}>${item.jenjang_sekolah}</option>`;
+            });
+        }
     }
 
-    function openEditPeserta(button) {
-        const pesertaId = button.dataset.id;
-        const namaAnak = button.dataset.nama;
-        const jenjang = button.dataset.jenjang;
-        const npk = button.dataset.npk;
-        const namaOrtu = button.dataset.namaortu;
-        const plantId = button.dataset.plant;
-
-        document.getElementById('editPesertaId').value = pesertaId;
-        document.getElementById('editNamaAnak').value = namaAnak;
-        document.getElementById('editNpk').value = npk;
-        document.getElementById('editNamaOrtu').value = namaOrtu;
-        document.getElementById('editPlantSelect').value = plantId;
-        refreshEditJenjangOptions(jenjang);
-
-        const form = document.getElementById('formEditPeserta');
-        form.action = '/beasiswa/peserta/update/' + pesertaId;
+    function filterPeserta() {
+        const status = document.getElementById('filterStatus').value;
+        document.querySelectorAll('tbody tr').forEach(row => {
+            if (status === 'all') row.style.display = '';
+            else if (status === 'winner') row.style.display = row.classList.contains('is-winner-row') ? '' : 'none';
+            else row.style.display = row.classList.contains('is-candidate-row') ? '' : 'none';
+        });
     }
 
     function tambahJenjangRow(plantId) {
         const container = document.getElementById('jenjangRows' + plantId);
-        const row = document.createElement('div');
-        row.className = 'row g-2 jenjang-row mb-3 align-items-end';
-        row.innerHTML = `
-            <div class="col-5">
-                <input type="text" name="jenjang_sekolah[]" class="form-control btn-round" placeholder="Nama Jenjang (misal SD)" required>
-            </div>
-            <div class="col-4">
-                <input type="number" name="nominal[]" class="form-control btn-round" placeholder="Nominal Beasiswa" required>
-            </div>
-            <div class="col-2">
-                <input type="number" name="kuota[]" class="form-control btn-round" placeholder="Kuota" min="0" value="0">
-            </div>
-            <div class="col-1">
-                <button type="button" class="btn btn-danger btn-sm w-100" onclick="hapusJenjangRow(this)">×</button>
-            </div>
-        `;
-        container.appendChild(row);
-    }
-
-    function hapusJenjangRow(button) {
-        const row = button.closest('.jenjang-row');
-        if (row) {
-            row.remove();
-        }
+        const html = `<div class="row g-2 mb-2"><div class="col-5"><input type="text" name="jenjang_sekolah[]" class="form-control" required></div><div class="col-4"><input type="number" name="nominal[]" class="form-control" required></div><div class="col-2"><input type="number" name="kuota[]" class="form-control" value="0"></div><div class="col-1"><button type="button" class="btn btn-danger" onclick="this.closest('.row').remove()">×</button></div></div>`;
+        container.insertAdjacentHTML('beforeend', html);
     }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

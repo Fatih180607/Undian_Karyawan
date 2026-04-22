@@ -31,6 +31,7 @@ Route::post('/beasiswa/peserta/update/{id}', [BeasiswaController::class, 'update
 Route::post('/beasiswa/peserta/delete/{id}', [BeasiswaController::class, 'deletePeserta']);
 Route::post('/beasiswa/peserta/reset', [BeasiswaController::class, 'resetPeserta']);
 Route::get('/beasiswa-undi', [BeasiswaController::class, 'layarUndian'])->name('beasiswa.index');
+Route::get('/beasiswa/peserta/list', [BeasiswaController::class, 'getPesertaList']);
 Route::get('/beasiswa/export-pemenang', [BeasiswaController::class, 'exportPemenang'])->name('beasiswa.export');
 
 /*
@@ -40,6 +41,9 @@ Route::get('/beasiswa/export-pemenang', [BeasiswaController::class, 'exportPemen
 */
 Route::get('/', [EmployeeController::class, 'indexAdmin'])->name('admin.index');
 Route::get('/undian', [EmployeeController::class, 'indexGacha'])->name('gacha.index');
+Route::get('/gacha-debug', function() {
+    return view('gacha_debug');
+});
 Route::post('/admin/add-employee', [EmployeeController::class, 'addEmployee']);
 Route::post('/admin/import-employees', [EmployeeController::class, 'importEmployees']);
 Route::post('/admin/update/{id}', [EmployeeController::class, 'updateEmployee']);

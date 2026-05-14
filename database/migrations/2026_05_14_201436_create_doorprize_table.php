@@ -10,21 +10,20 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::create('prizes', function (Blueprint $table) {
-            $table->id();
-            $table->string('nama_hadiah');
-            $table->string('stok')->default(1);
-            $table->string('foto_hadiah')->nullable();
-            $table->timestamps();
-        });
-    }
-
+{
+    Schema::create('doorprize', function (Blueprint $table) {
+        $table->id();
+        $table->string('nama_hadiah');
+        $table->string('foto_hadiah')->nullable();
+        $table->integer('jumlah_hadiah')->default(1);
+        $table->timestamps();
+    });
+}
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('prizes');
+        Schema::dropIfExists('doorprize');
     }
 };

@@ -33,6 +33,9 @@
 </head>
 <body>
 
+<audio id="soundSpin" src="/audio/spin.mp3" preload="auto"></audio>
+<audio id="soundSelesai" src="/audio/spin_selesai.mp3" preload="auto"></audio>
+
 <div class="container py-4">
     <div class="top-brand">
         <img src="/images/rat_k2ms.png" alt="RAT K2MS Logo">
@@ -109,6 +112,10 @@
     let currentWinners = [];
     let currentPlantName = '';
 
+    // Inisialisasi Audio
+    const audioSpin = document.getElementById('soundSpin');
+    const audioSelesai = document.getElementById('soundSelesai');
+
     function onPlantChange() {
         const plantId = document.getElementById('pilih_plant').value;
         document.querySelectorAll('.box-undi').forEach(box => box.classList.add('d-none'));
@@ -132,21 +139,16 @@
         document.getElementById('btnMulai').disabled = true;
         document.querySelectorAll('[id^="list-"]').forEach(el => el.innerHTML = '');
 
+        // LOOP JENJANG
         for (const target of quotas) {
             const container = document.getElementById('list-' + target.jenjang_slug);
             const box = document.getElementById('box-' + target.jenjang_slug);
-            const debug = document.getElementById('debug-' + target.jenjang_slug);
 
-            // 1. AMBIL DATA DULU (PENTING!)
             const [resWin, resPool] = await Promise.all([
                 fetch(`/beasiswa/kocok?jenjang=${encodeURIComponent(target.jenjang_sekolah)}&jumlah=${target.jumlah_slot}&plant_id=${plantId}`).then(r => r.json()),
                 fetch(`/beasiswa/peserta/list?jenjang=${encodeURIComponent(target.jenjang_sekolah)}&plant_id=${plantId}`).then(r => r.json())
             ]);
 
-            // Tampilkan jumlah data yang ditarik untuk pengecekan
-            debug.innerText = `Data Pool: ${resPool.length} | Winner: ${resWin.length}`;
-
-            // 2. AKTIFKAN BOX
             if (box) {
                 box.classList.remove('d-none');
                 box.classList.add('box-active');
@@ -154,10 +156,9 @@
             }
 
             await new Promise(r => setTimeout(r, 500));
-
             const poolData = (resPool && resPool.length > 0) ? resPool : resWin;
 
-            // 3. JALANKAN ANIMASI UNTUK SETIAP PEMENANG
+            // LOOP PER NAMA PEMENANG
             for (const winner of resWin) {
                 const div = document.createElement('div');
                 div.className = 'winner-item';
@@ -167,9 +168,13 @@
                 const startTime = Date.now();
                 let lastIdx = -1;
 
+                // MULAI SUARA SPIN (DIBUAT LOOPING)
+                audioSpin.currentTime = 0;
+                audioSpin.loop = true;
+                audioSpin.play().catch(e => console.log("Audio diblokir browser, klik layar dulu!"));
+
                 while (Date.now() - startTime < duration) {
                     let randomIdx;
-
                     if (poolData.length > 1) {
                         do {
                             randomIdx = Math.floor(Math.random() * poolData.length);
@@ -188,7 +193,11 @@
                     await new Promise(r => setTimeout(r, 50));
                 }
 
-                // HASIL AKHIR (Nama Anak, Nama Orang Tua (NPK))
+                // MATIKAN SUARA SPIN TEPAT SAAT NAMA MUNCUL
+                audioSpin.pause();
+                audioSpin.currentTime = 0;
+
+                // HASIL AKHIR PEMENANG
                 div.innerHTML = `
                     <span class="text-success fw-bold"><i class="fas fa-check-circle"></i> PEMENANG:</span><br>
                     <strong style="font-size: 1.25rem;">${winner.nama_anak}</strong><br>
@@ -204,6 +213,9 @@
             box.classList.remove('box-active');
             await new Promise(r => setTimeout(r, 1000));
         }
+
+        // SEMUA SELESAI -> BUNYI SUARA SELESAI SEKALI
+        audioSelesai.play();
 
         document.getElementById('btnMulai').disabled = false;
         document.getElementById('btnExport').classList.remove('d-none');

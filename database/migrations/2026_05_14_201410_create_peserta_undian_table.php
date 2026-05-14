@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('employees', function (Blueprint $table) {
-            $table->boolean('is_winner')->default(false)->after('plant_id');
-            $table->string('prize_won')->nullable()->after('is_winner');
+        Schema::create('peserta_undian', function (Blueprint $table) {
+            $table->id();
+            $table->string('npk')->unique();
+            $table->string('nama_karyawan');
+            $table->string('plant');
+            $table->boolean('is_winner')->default(false);
+            $table->timestamps();
         });
     }
 
@@ -22,8 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('employees', function (Blueprint $table) {
-            $table->dropColumn(['is_winner', 'prize_won']);
-        });
+        Schema::dropIfExists('peserta_undian');
     }
 };

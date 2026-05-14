@@ -197,4 +197,16 @@ class BeasiswaController extends Controller
         PesertaBeasiswa::truncate();
         return back()->with('success', 'Data direset!');
     }
+
+    public function resetWinners()
+{
+    try {
+        // Mengubah semua is_winner yang 1 menjadi 0
+        \App\Models\PesertaBeasiswa::where('is_winner', 1)->update(['is_winner' => 0]);
+
+        return back()->with('success', 'Semua data pemenang berhasil di-reset!');
+    } catch (\Exception $e) {
+        return back()->with('error', 'Gagal reset data: ' . $e->getMessage());
+    }
+}
 }

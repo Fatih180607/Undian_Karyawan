@@ -51,7 +51,9 @@ Route::get('/admin/delete/{id}', [EmployeeController::class, 'deleteEmployee']);
 Route::post('/admin/add-prize', [EmployeeController::class, 'addPrize']);
 Route::get('/admin/delete-prize/{id}', [EmployeeController::class, 'deletePrize']);
 Route::post('/win', [EmployeeController::class, 'storeWinner']);
-
+Route::post('/admin/import-employees', [EmployeeController::class, 'importEmployees']);
+Route::get('/admin/export-winners', [EmployeeController::class, 'exportWinners']);
+Route::get('/admin/export-full-pemenang', [App\Http\Controllers\EmployeeController::class, 'exportFullPemenangTable']);
 Route::get('/about', function () {
     return view('about');
 });
@@ -60,3 +62,8 @@ Route::post('/admin/delete-all-employees', function() {
     \App\Models\Employee::truncate(); // Ini bakal ngosongin tabel & reset ID ke 1
     return redirect()->back()->with('success', 'Semua data peserta berhasil dibersihkan!');
 });
+
+// Pastikan baris ini ada di routes/web.php
+Route::post('/admin/reset-winners', [App\Http\Controllers\EmployeeController::class, 'resetWinners']);
+// Ganti Route::post tadi dengan ini:
+Route::match(['get', 'post'], '/beasiswa/reset', [BeasiswaController::class, 'resetWinners'])->name('beasiswa.reset');

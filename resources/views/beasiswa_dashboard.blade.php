@@ -45,6 +45,12 @@
                         <i class="fas fa-cog me-1"></i> Settings
                     </a>
                 </li>
+                                <li class="nav-item ms-lg-3">
+                    <a class="nav-link {{ Request::is('about') ? 'active fw-bold' : '' }}" href="/about"
+                       style="{{ Request::is('about') ? 'border-bottom: 2px solid #ffc107; color:white;' : '' }}">
+                        <i class="fas fa-info-circle me-1"></i> Tentang
+                    </a>
+                </li>
             </ul>
         </div>
         <a href="/beasiswa-undi" target="_blank" class="btn btn-warning btn-round btn-sm px-4 text-dark">
@@ -147,8 +153,14 @@
                         </select>
                         <form action="/beasiswa/peserta/reset" method="POST" onsubmit="return confirm('Hapus semua peserta?');">
                             @csrf
-                            <button type="submit" class="btn btn-sm btn-danger">Reset</button>
+                            <button type="submit" class="btn btn-sm btn-danger">Hapus Semua</button>
                         </form>
+                        <form action="{{ route('beasiswa.reset') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin mereset semua pemenang?');" style="display: inline;">
+    @csrf
+    <button type="submit" class="btn btn-danger btn-round fw-bold">
+        <i class="fas fa-undo"></i> RESET PEMENANG
+    </button>
+</form>
                     </div>
                 </div>
                 <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">

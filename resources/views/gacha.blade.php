@@ -46,6 +46,26 @@
         }
         .btn-export:hover { transform: scale(1.05); background: #f8f9fa; color: #000; }
 
+        /* Style Input Hadiah (Tambahan) */
+        .input-hadiah-container { margin-bottom: 20px; }
+    #input-hadiah-manual {
+    background: rgba(255, 255, 255, 0.9);
+    border: 5px solid #8d7d77; /* Tebalin garis pinggir */
+    border-radius: 50px;
+
+    /* UBAH DI SINI UNTUK UKURAN */
+    padding: 15px 40px;      /* 15px atas-bawah, 40px kiri-kanan */
+    font-size: 2rem;         /* Ganti ke 2rem atau 2.5rem biar makin gede */
+    width: 600px;            /* Lebarin kotaknya jadi 600px atau sesuai selera */
+
+    font-weight: 900;
+    text-align: center;
+    color: #5d534f;
+    text-transform: uppercase;
+    outline: none;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2); /* Tambahin bayangan biar timbul */
+}
+
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-25px); } }
         @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
     </style>
@@ -62,6 +82,11 @@
         </div>
     </div>
     <div class="name-box"><div id="display-text">SIAP?</div></div>
+
+    <div class="input-hadiah-container">
+        <input type="text" id="input-hadiah-manual" placeholder="KETIK NAMA HADIAH DI SINI">
+    </div>
+
     <button class="btn-draw" id="btn-spin" onclick="startDraw()">MULAI UNDI</button>
 </div>
 
@@ -75,11 +100,23 @@
 <script>
     const employees = @json($employees);
     const prizes = @json($prizes);
-    const selectedPrizeName = "{{ $nama_hadiah_manual }}";
 
     let winnersData = [];
 
     function startDraw() {
+        // AMBIL INPUT HADIAH DULU
+        const inputH = document.getElementById('input-hadiah-manual');
+        const typedName = inputH.value.trim().toUpperCase();
+
+        if (typedName === "") return alert("Ketik nama hadiah dulu, Bang!");
+
+        // CARI HADIAH DI DATABASE (prizes)
+        const pObj = prizes.find(p => p.nama_hadiah.toUpperCase() === typedName);
+
+        if (!pObj) {
+            return alert("HADIAH TIDAK ADA! Ketik yang persis sama dengan list admin.");
+        }
+
         if (employees.length === 0) return alert("Selesai!");
 
         const btn = document.getElementById('btn-spin'), disp = document.getElementById('display-text');
@@ -88,6 +125,7 @@
         const sRoll = document.getElementById('snd-roll'), sWin = document.getElementById('snd-win');
 
         btn.disabled = true;
+        inputH.disabled = true; // Kunci input pas lagi ngacak
         gift.style.display = 'block';
         pFinal.style.display = 'none';
         disp.classList.remove('winner-glow');
@@ -111,27 +149,35 @@
                     sWin.play();
                     gift.style.display = 'none';
 
-                    pTitle.innerText = selectedPrizeName || "HADIAH MISTERI";
-                    let pObj = prizes.find(p => p.nama_hadiah === selectedPrizeName);
-
-                    pImg.src = (pObj && pObj.foto_hadiah) ? "/images/" + pObj.foto_hadiah : "/images/mystery_box.jpg";
+                    pTitle.innerText = pObj.nama_hadiah;
+                    pImg.src = "/images/" + pObj.foto_hadiah;
 
                     pFinal.style.display = 'block';
-                    disp.innerHTML = winner.employee_name + "<br><small style='font-size: 2.2rem; opacity: 0.6;'>" + winner.employee_number + "</small>";
+                  // FORMAT BARU: Nama Gede, Plant Berwarna, NPK Kecil Rapi
+disp.innerHTML = `
+    <div style="line-height: 1.2;">
+        <div style="font-size: 5.5rem; font-weight: 900; color: #3d3633; text-transform: uppercase; margin-bottom: 5px;">
+            ${winner.employee_name}
+        </div>
+        <div style="font-size: 3rem; font-weight: 700; color: #8d7d77; letter-spacing: 2px; margin-bottom: 10px;">
+            PLANT: ${winner.plant ? winner.plant.nama_plant : '-'}
+        </div>
+        <div style="display: inline-block; background: #5d534f; color: #fff; padding: 5px 30px; border-radius: 50px; font-size: 1.8rem; font-weight: 700; opacity: 0.9;">
+            NPK: ${winner.employee_number}
+        </div>
+    </div>
+`;
                     disp.classList.add('winner-glow');
 
                     confetti({ particleCount: 300, spread: 100, origin: { y: 0.6 } });
 
-                    // Simpan data pemenang ke array lokal untuk CSV
-                    // Mengambil nama_plant dari relasi yang sudah di-load di Controller
                     winnersData.push({
                         npk: winner.employee_number,
                         nama: winner.employee_name,
                         plant: (winner.plant && winner.plant.nama_plant) ? winner.plant.nama_plant : (winner.plant_id || "-"),
-                        hadiah: selectedPrizeName || "HADIAH MISTERI"
+                        hadiah: pObj.nama_hadiah
                     });
 
-                    // Munculkan tombol export
                     document.getElementById('btn-csv').style.display = 'block';
 
                     fetch('/win', {
@@ -139,8 +185,8 @@
                         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                         body: JSON.stringify({
                             id_employee: winner.id,
-                            nama_hadiah: selectedPrizeName || "HADIAH MISTERI",
-                            foto_hadiah: (pObj && pObj.foto_hadiah) ? pObj.foto_hadiah : "mystery_box.jpg"
+                            nama_hadiah: pObj.nama_hadiah,
+                            foto_hadiah: pObj.foto_hadiah
                         })
                     });
 
@@ -148,7 +194,9 @@
 
                     setTimeout(() => {
                         btn.disabled = false;
+                        inputH.disabled = false; // Buka lagi kuncinya
                         btn.innerText = "UNDI LAGI";
+                        inputH.value = ""; // Bersihin input buat hadiah berikutnya
                     }, 2000);
                 }, 8000);
             }
@@ -156,13 +204,10 @@
     }
 
     function exportToCSV() {
-        // "sep=," memberitahu Excel agar otomatis membagi kolom menggunakan koma
         let csvContent = "data:text/csv;charset=utf-8,sep=,\nNPK,Nama Pemenang,Plant,Hadiah\n";
-
         winnersData.forEach(function(row) {
             csvContent += `"${row.npk}","${row.nama}","${row.plant}","${row.hadiah}"\n`;
         });
-
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
